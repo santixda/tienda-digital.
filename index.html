@@ -1,1 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Store | Premium Accounts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        body { background: #020617; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass-card { 
+            background: rgba(15, 23, 42, 0.6); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .glass-card:hover { 
+            transform: translateY(-10px); 
+            border-color: #3b82f6; 
+            box-shadow: 0 20px 40px -15px rgba(59, 130, 246, 0.5); 
+        }
+        .gradient-text { background: linear-gradient(90deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body>
+    <nav class="sticky top-0 z-50 bg-[#020617]/80 backdrop-blur-md border-b border-white/5 p-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-extrabold italic tracking-tighter">DIGITAL<span class="text-blue-500 italic">STORE</span></h1>
+            <a id="btn-wa-global" href="#" class="bg-[#25D366] px-6 py-2 rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-105 transition">
+                <i class="fab fa-whatsapp text-lg"></i> <span class="hidden sm:inline">Pedir por WhatsApp</span>
+            </a>
+        </div>
+    </nav>
 
+    <header class="text-center py-20 px-4">
+        <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4 py-1 text-xs text-blue-400 font-bold uppercase tracking-widest">
+            ⚡ Entrega Inmediata
+        </div>
+        <h2 class="text-5xl md:text-7xl font-black mb-6">Tus Apps favoritas <br><span class="gradient-text">al mejor precio</span></h2>
+        <p class="text-slate-400 max-w-xl mx-auto text-lg leading-relaxed">Cuentas garantizadas, sin caídas y soporte técnico 24/7. Elige tu plan favorito.</p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 grid gap-8 md:grid-cols-2 lg:grid-cols-3 pb-32" id="products-grid">
+        </main>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 800, once: true });
+
+        function loadStore() {
+            const products = JSON.parse(localStorage.getItem('digital_db')) || [];
+            const wa = localStorage.getItem('digital_wa') || "51900000000";
+            const grid = document.getElementById('products-grid');
+            document.getElementById('btn-wa-global').href = `https://wa.me/${wa}`;
+
+            if(products.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center py-20 text-slate-500 italic">No hay productos disponibles por ahora...</p>';
+                return;
+            }
+
+            grid.innerHTML = products.map((p, i) => `
+                <div class="glass-card rounded-[2.5rem] p-8 flex flex-col relative overflow-hidden" data-aos="fade-up" data-aos-delay="${i * 100}">
+                    ${p.popular ? '<div class="absolute top-6 -right-12 rotate-45 bg-blue-600 text-[10px] font-black px-12 py-1.5 shadow-lg">OFERTA</div>' : ''}
+                    <img src="${p.logo}" class="w-16 h-16 object-contain mb-8 rounded-2xl bg-white/5 p-2" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1169/1169939.png'">
+                    <h3 class="text-3xl font-black mb-2 italic uppercase tracking-tighter">${p.name}</h3>
+                    <div class="flex items-baseline gap-2 mb-8">
+                        <span class="text-4xl font-black text-blue-500">S/ ${p.price}</span>
+                        ${p.oldPrice ? `<span class="text-slate-500 line-through text-sm">S/ ${p.oldPrice}</span>` : ''}
+                    </div>
+                    <ul class="text-slate-400 text-sm space-y-4 mb-10 flex-grow">
+                        ${p.features.map(f => `<li><i class="fas fa-check-circle text-blue-500 mr-2"></i>${f}</li>`).join('')}
+                    </ul>
+                    <a href="https://wa.me/${wa}?text=Hola, quiero comprar el servicio de: ${p.name}" class="bg-blue-600 text-white font-black py-4 rounded-2xl text-center hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20">
+                        COMPRAR AHORA
+                    </a>
+                </div>
+            `).join('');
+        }
+        window.onload = loadStore;
+    </script>
+</body>
+</html>
