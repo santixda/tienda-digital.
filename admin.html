@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Admin | Digital Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f1f5f9; color: #1e293b; font-family: 'Inter', sans-serif; }
+        .input-field { width: 100%; border: 2px solid #e2e8f0; padding: 12px; border-radius: 12px; margin-bottom: 15px; outline: none; transition: 0.3s; }
+        .input-field:focus { border-color: #3b82f6; background: white; }
+        .btn-save { background: #22c55e; color: white; font-weight: 900; padding: 18px; border-radius: 12px; width: 100%; cursor: pointer; border: none; transition: 0.3s; box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.4); }
+        .btn-save:hover { background: #16a34a; transform: translateY(-2px); }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white rounded-3xl p-6 md:p-10 shadow-xl flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">Control de <span class="text-blue-600">Catálogo</span></h1>
+                <p class="text-slate-500 text-sm font-medium">Gestiona tus productos digitales de forma instantánea.</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 w-full md:w-auto">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Configurar Mi WhatsApp (Sin el +)</p>
+                <div class="flex gap-2">
+                    <input type="text" id="wa-num" placeholder="51900000000" class="border p-2 rounded-lg text-sm w-full md:w-32 outline-none focus:ring-2 ring-blue-500">
+                    <button onclick="saveWA()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-600 transition">GUARDAR</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-10">
+            <div class="bg-white p-8 rounded-[2rem] shadow-2xl border border-slate-100">
+                <h2 class="text-xl font-black mb-6 flex items-center gap-2"><i class="fas fa-plus-circle text-blue-500"></i> Nuevo Producto</h2>
+                
+                <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Nombre (Ej: Combo Netflix + Disney)</label>
+                <input type="text" id="p-name" placeholder="Nombre del servicio" class="input-field">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Precio S/</label>
+                        <input type="text" id="p-price" placeholder="15.00" class="input-field">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Tachado S/</label>
+                        <input type="text" id="p-old" placeholder="40.00" class="input-field">
+                    </div>
+                </div>
+                
+                <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Link del Logo (Imagen PNG)</label>
+                <input type="text" id="p-logo" placeholder="https://..." class="input-field">
+                
+                <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Beneficios (Separar por comas)</label>
+                <textarea id="p-features" placeholder="Ultra HD, 1 Pantalla, Garantía 30 días" class="input-field h-24"></textarea>
+                
+                <label class="flex items-center gap-3 mb-8 p-3 bg-slate-50 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="p-pop" class="w-5 h-5 accent-blue-600">
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-600">Etiqueta OFERTA</span>
+                </label>
+
+                <button onclick="addProduct()" class="btn-save uppercase tracking-widest">
+                    <i class="fas fa-check-circle mr-2"></i> Publicar en Web
+                </button>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="flex justify-between items-center mb-6 px-2">
+                    <h2 class="text-xl font-black uppercase italic tracking-tighter">Productos Activos</h2>
+                    <button onclick="resetAll()" class="text-red-500 text-[10px] font-bold border-b border-red-500/20 hover:border-red-500 transition">ELIMINAR TODO EL CATÁLOGO</button>
+                </div>
+                <div id="admin-list" class="grid gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db = JSON.parse(localStorage.getItem('digital_db')) || [];
+        
+        function render() {
+            const list = document.getElementById('admin-list');
+            document.getElementById('wa-num').value = localStorage.getItem('digital_wa') || "51900000000";
+            
+            if(db.length === 0) {
+                list.innerHTML = `<div class="bg-white p-10 rounded-3xl text-center text-slate-400 italic border-2 border-dashed border-slate-200">No hay productos publicados. Usa el formulario de la izquierda.</div>`;
+                return;
+            }
+
+            list.innerHTML = db.map((p, i) => `
+                <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center justify-between border-l-8 border-blue-500 hover:shadow-md transition">
+                    <div class="flex items-center gap-4">
+                        <img src="${p.logo}" class="w-12 h-12 object-contain bg-slate-100 rounded-lg p-1" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1169/1169939.png'">
+                        <div>
+                            <h4 class="font-black uppercase text-sm leading-none">${p.name}</h4>
+                            <p class="text-blue-600 font-bold text-xs mt-1">Venta: S/ ${p.price}</p>
+                        </div>
+                    </div>
+                    <button onclick="del(${i})" class="text-slate-300 hover:text-red-500 p-2 transition"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function addProduct() {
+            const name = document.getElementById('p-name').value;
+            const price = document.getElementById('p-price').value;
+            const oldPrice = document.getElementById('p-old').value;
+            const logo = document.getElementById('p-logo').value;
+            const features = document.getElementById('p-features').value.split(',').map(f => f.trim());
+            const popular = document.getElementById('p-pop').checked;
+
+            if(name && price && features[0]) {
+                db.push({ name, price, oldPrice, logo, features, popular });
+                localStorage.setItem('digital_db', JSON.stringify(db));
+                render();
+                
+                // Limpiar
+                document.getElementById('p-name').value = "";
+                document.getElementById('p-price').value = "";
+                document.getElementById('p-old').value = "";
+                document.getElementById('p-logo').value = "";
+                document.getElementById('p-features').value = "";
+                document.getElementById('p-pop').checked = false;
+                alert("¡Producto publicado con éxito! 🚀");
+            } else {
+                alert("Por favor completa Nombre, Precio y al menos un Beneficio.");
+            }
+        }
+
+        function del(i) {
+            if(confirm("¿Seguro que quieres eliminar este producto?")) {
+                db.splice(i, 1);
+                localStorage.setItem('digital_db', JSON.stringify(db));
+                render();
+            }
+        }
+
+        function saveWA() {
+            const num = document.getElementById('wa-num').value;
+            localStorage.setItem('digital_wa', num);
+            alert("Número de ventas guardado: " + num);
+        }
+
+        function resetAll() {
+            if(confirm("¡PELIGRO! Se borrarán todos tus productos. ¿Continuar?")) {
+                db = [];
+                localStorage.removeItem('digital_db');
+                render();
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>
